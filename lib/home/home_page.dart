@@ -10,20 +10,17 @@ import 'package:flutter/rendering.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sweetalert/sweetalert.dart';
 
-
-
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Module> _modules = new List<Module>();
   List<Module> modules;
   Module _currentModule;
   bool _load = true;
-
 
   @override
   void initState() {
@@ -41,19 +38,15 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           iconTheme: IconThemeData(color: AppColors().dark),
           elevation: 0.0,
           backgroundColor: Colors.transparent,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Icon(
-                Icons.settings,
-                color: AppColors().dark,
-              ),
-            )
-          ],
+          leading: IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () => _scaffoldKey.currentState.openDrawer(),
+          ),
         ),
         backgroundColor: Colors.white,
         drawer: Container(
@@ -81,34 +74,36 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-_buildStartImageMap() {
-  return Padding(
-    padding: const EdgeInsets.only( top: 32),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            Text(
-              "Identificação de células",
-              style: TextStyle(
-                  color: AppColors().dark,
-                  fontSize: 18,
-                  fontFamily: 'Montserrat-SemiBold'),
-            ),
-          ],
-        ),
-        Container(
-          padding: EdgeInsets.only(top:25),
-          width: MediaQuery.of(context).size.width*0.7,
-          child: AppButton("Começar",(){}),
-        )
-      ],
-    ),
-  );
-}
+
+  _buildStartImageMap() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 32),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                "Identificação de células",
+                style: TextStyle(
+                    color: AppColors().dark,
+                    fontSize: 18,
+                    fontFamily: 'Montserrat-SemiBold'),
+              ),
+            ],
+          ),
+          Container(
+            padding: EdgeInsets.only(top: 25),
+            width: MediaQuery.of(context).size.width * 0.7,
+            child: AppButton("Começar", () {}),
+          )
+        ],
+      ),
+    );
+  }
+
   _buildFooter() {
     return Padding(
-      padding: const EdgeInsets.only(top: 32,bottom: 400),
+      padding: const EdgeInsets.only(top: 32, bottom: 400),
       child: Column(
         children: [
           Row(
@@ -122,8 +117,7 @@ _buildStartImageMap() {
               ),
             ],
           ),
-        //  charts(),
-
+          //  charts(),
         ],
       ),
     );
@@ -193,74 +187,75 @@ _buildStartImageMap() {
                 : SizedBox(),
             Row(
               children: [
-
                 Align(
                   alignment: Alignment.topCenter,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                           children: [
-                             Text(
-                               module.moduleName ?? "",
-                               style: TextStyle(
-                                   color: AppColors().dark,
-                                   fontFamily: 'Montserrat-SemiBold',
-                                   fontSize: 14),
-                             ),
-                             module.isCompleted !=0  ? IconButton(icon: Icon(Icons.refresh, size: 24,), onPressed: () {
-                               DatabaseHelper().resetModule(id: module.id);
-                               setState(() {
-                                 getmodules();
-                               });
-                             }) : SizedBox()
-                           ],
-                         ),
+                    children: [
+                      Text(
+                        module.moduleName ?? "",
+                        style: TextStyle(
+                            color: AppColors().dark,
+                            fontFamily: 'Montserrat-SemiBold',
+                            fontSize: 14),
+                      ),
+                      module.isCompleted != 0
+                          ? IconButton(
+                              icon: Icon(
+                                Icons.refresh,
+                                size: 24,
+                              ),
+                              onPressed: () {
+                                DatabaseHelper().resetModule(id: module.id);
+                                setState(() {
+                                  getmodules();
+                                });
+                              })
+                          : SizedBox()
+                    ],
+                  ),
                 ),
-
               ],
             ),
-            module.isCompleted == 0 ? Align(
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.1,
-                width: MediaQuery.of(context).size.width * 0.3,
-                child: AppButton(
-                  "Começar",
-                  () async {
-
-                     bool refresh = await push(context, Quiz(module.id));
-                   if(refresh) {
-                     if(!mounted) return;
-                     setState(() {
-                       getmodules();
-                     });
-                   }
-
-
-                  },
-                  outlineBtn: false,
-                  color: AppColors().dark,
-                  color2: AppColors().dark,
-                  textColor: AppColors().light,
-                ),
-              ),
-              alignment: Alignment.bottomRight,
-            ) : Align(
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.1,
-                width: MediaQuery.of(context).size.width * 0.35,
-                child: AppButton(
-                  "Respondido",
-                      () {
-
-                  },
-                  outlineBtn: false,
-                  color: Colors.grey,
-                  color2: Colors.grey,
-                  textColor: AppColors().light,
-                ),
-              ),
-              alignment: Alignment.bottomRight,
-            )
+            module.isCompleted == 0
+                ? Align(
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.1,
+                      width: MediaQuery.of(context).size.width * 0.3,
+                      child: AppButton(
+                        "Começar",
+                        () async {
+                          bool refresh = await push(context, Quiz(module.id));
+                          if (refresh) {
+                            if (!mounted) return;
+                            setState(() {
+                              getmodules();
+                            });
+                          }
+                        },
+                        outlineBtn: false,
+                        color: AppColors().dark,
+                        color2: AppColors().dark,
+                        textColor: AppColors().light,
+                      ),
+                    ),
+                    alignment: Alignment.bottomRight,
+                  )
+                : Align(
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.1,
+                      width: MediaQuery.of(context).size.width * 0.35,
+                      child: AppButton(
+                        "Respondido",
+                        () {},
+                        outlineBtn: false,
+                        color: Colors.grey,
+                        color2: Colors.grey,
+                        textColor: AppColors().light,
+                      ),
+                    ),
+                    alignment: Alignment.bottomRight,
+                  )
           ],
         ));
   }
@@ -293,9 +288,7 @@ _buildStartImageMap() {
     );
   }
 
-  charts() {
-
-  }
+  charts() {}
 
   Future<List<Module>> _getModules() async {
     var dbHelper = DatabaseHelper();
@@ -313,12 +306,10 @@ _buildStartImageMap() {
 
     return modules;
   }
-@override
+
+  @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
   }
 }
-
-
-
