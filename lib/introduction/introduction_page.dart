@@ -1,8 +1,10 @@
 import 'package:blood_learning/helpers/db_helper.dart';
 import 'package:blood_learning/home/home_page.dart';
-import 'package:blood_learning/introduction/introduction_controller.dart';
+
 import 'package:blood_learning/shared/models/module_model.dart';
+import 'package:blood_learning/shared/models/slide_model.dart';
 import 'package:blood_learning/shared/models/user_model.dart';
+import 'package:blood_learning/shared/store/user_store.dart';
 import 'package:blood_learning/widgets/utils/navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:blood_learning/introduction/banners/slides.dart';
@@ -18,14 +20,16 @@ class IntroductionPage extends StatefulWidget {
 }
 
 class _IntroductionPageState extends State<IntroductionPage> {
-  final controller = Controller();
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final _tName = TextEditingController();
+  bool _load= false;
+  AppUser user;
   DatabaseHelper dbHelper;
   @override
   void initState() {
     super.initState();
-
+    getuser();
     /* Future<AppUser> usr = AppUser.getClientUsr();
     usr.then((AppUser user) {
       if (user != null) {
@@ -34,6 +38,9 @@ class _IntroductionPageState extends State<IntroductionPage> {
     });**/
   }
 
+  getuser() async { 
+    user = await _getUser();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +50,7 @@ class _IntroductionPageState extends State<IntroductionPage> {
 
   _buildBody() {
     return SingleChildScrollView(
-      child: Container(
+      child: !_load? Container(
         padding: EdgeInsets.only(left: 32, right: 32),
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
@@ -51,6 +58,9 @@ class _IntroductionPageState extends State<IntroductionPage> {
         child: Column(
           children: [_buildLogo(), _buildTitle(), _buildBottom()],
         ),
+      ) : Container(
+        color: AppColors().light,
+        child: CircularProgressIndicator(),
       ),
     );
   }
@@ -126,11 +136,11 @@ class _IntroductionPageState extends State<IntroductionPage> {
                 width: MediaQuery.of(context).size.width * 0.4,
                 child: AppButton(
                   "Continuar >",
-                  () {
+                  () async{
                     if (!_formKey.currentState.validate()) {
                       return;
                     }
-                    controller.saveUser(new AppUser(_tName.text, false, false));
+                   await createUser(_tName.text);
                     push(context, Slides());
                   },
                   outlineBtn: false,
@@ -153,4 +163,27 @@ class _IntroductionPageState extends State<IntroductionPage> {
 
     return null;
   }
+
+  Future<AppUser> _getUser() async {
+ 
+
+    await getUser().then((value) {
+      user = value;
+      setState(() {
+        _load=false;
+        if (user!= null) {
+         push(context,Slides());
+         
+        } else {
+         
+          return;
+        }
+      });
+    });
+  
+
+    return user;
+  }
+
+
 }

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:blood_learning/helpers/db_helper.dart';
 import 'package:blood_learning/home/home_page.dart';
-import 'package:blood_learning/quiz/quiz_controller.dart';
+
 import 'package:blood_learning/shared/models/answer_model.dart';
 import 'package:blood_learning/shared/models/module_model.dart';
 import 'package:blood_learning/shared/models/question_model.dart';
@@ -25,7 +25,7 @@ class Quiz extends StatefulWidget {
 
 class _QuizState extends State<Quiz> {
   bool _visible = false;
-  final controller = Controller();
+  
   int currentIndex = 0;
   List<Question> questions = List<Question>();
 
@@ -118,6 +118,7 @@ class _QuizState extends State<Quiz> {
                         questions[i].answers[index].rightAnswered = 1;
                         print("É A RESPOSTA CORRETA!");
                       } else {
+                        questions[i].answers[index].rightAnswered = 0;
                         print("REsposta errada!");
                       }
                       if (currentIndex != questions.length - 1) {
@@ -156,11 +157,11 @@ class _QuizState extends State<Quiz> {
                       for (Answer a in questions[i].answers) {
                         if (a.rightAnswered == 1 && a.selected == true) {
                           DatabaseHelper()
-                              .answerQuestion(id: a.id, isAnswered: 1, isOk: 1);
+                              .answerQuestion(id: questions[i].id, isAnswered: 1, isOk: 1);
                           aux++;
-                        } else if (a.selected == true) {
+                        } else if (a.selected == true && a.rightAnswered == 0) {
                           DatabaseHelper()
-                              .answerQuestion(id: a.id, isAnswered: 1, isOk: 0);
+                              .answerQuestion(id: questions[i].id, isAnswered: 1, isOk: 0);
                         }
                       }
                     }

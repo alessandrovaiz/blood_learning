@@ -1,7 +1,7 @@
 class Chart {
    String moduleName;
-   int correctAnswers;
-   int wrongAnswers;
+   String correctAnswers;
+   String wrongAnswers;
 
   Chart({this.moduleName,this.correctAnswers,this.wrongAnswers});
 
@@ -21,7 +21,13 @@ class Chart {
     moduleName = map['MOD_NAME'];
     correctAnswers = map['CORRECT_ANSWERS'];
     wrongAnswers = map['WRONG_ANSWERS'];
-
   }
+
+  @override
+  String toString() {
+    // TODO: implement toString
+    return "nome do modulo : ${moduleName}" + "Corretas : ${correctAnswers}" + " Erradas : ${wrongAnswers}";
+  }
+
 
 }

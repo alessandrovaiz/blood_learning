@@ -30,7 +30,7 @@ dependencies:
   path_provider: ^1.6.27
   sweetalert: any
   charts_flutter:
-
+  random_color: ^1.0.5
 
 
   # The following adds the Cupertino Icons font to your application.

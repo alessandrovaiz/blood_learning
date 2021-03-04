@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:blood_learning/home/home_page.dart';
-import 'package:blood_learning/introduction/introduction_controller.dart';
+
 import 'package:blood_learning/introduction/introduction_page.dart';
 import 'package:blood_learning/shared/models/user_model.dart';
 import 'package:blood_learning/widgets/utils/colors.dart';
@@ -16,7 +16,7 @@ class LoadingPage extends StatefulWidget {
 }
 
 class _LoadingPageState extends State<LoadingPage> {
-  final controller = Controller();
+
   AppUser user;
 
   int option = 0;
@@ -24,18 +24,9 @@ class _LoadingPageState extends State<LoadingPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Future<AppUser> usr = AppUser.getClientUsr();
+    //Future<AppUser> usr = AppUser.getClientUsr();
 
-    Timer(Duration(seconds: 3), () {
-      //usar isso
-    });
-    usr.then((AppUser user) {
-      if (user != null) {
-        push(context, HomePage(), replace: true);
-      } else {
-        push(context, IntroductionPage(), replace: true);
-      }
-    });
+  
   }
 
   @override

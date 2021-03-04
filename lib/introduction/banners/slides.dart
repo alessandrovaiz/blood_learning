@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:blood_learning/home/home_page.dart';
 import 'package:blood_learning/shared/models/slide_model.dart';
+import 'package:blood_learning/shared/models/user_model.dart';
 import 'package:blood_learning/shared/store/slides.dart';
+import 'package:blood_learning/shared/store/user_store.dart';
 import 'package:blood_learning/widgets/utils/colors.dart';
 import 'package:blood_learning/widgets/utils/navigator.dart';
 
@@ -17,15 +19,17 @@ class _SlidesState extends State<Slides> {
   List<Slide> slides = new List<Slide>();
   int currentIndex = 0;
   PageController _pageController = new PageController(initialPage: 0);
-
+  AppUser user;
   @override
   void initState() {
     // TODO: implement initState
-
+ super.initState();
     slides = getSlides();
-    super.initState();
+   getuser();
   }
-
+ getuser() async { 
+    user = await _getUser();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,7 +106,8 @@ class _SlidesState extends State<Slides> {
       height: Platform.isIOS ? 70 : 60,
       color: AppColors().secondaryDark,
       child: InkWell(
-        onTap: () {
+        onTap: () async {
+          await updateIntroduction(1);
           push(context, HomePage());
         },
         child: Text(
@@ -126,6 +131,26 @@ class _SlidesState extends State<Slides> {
           color: isCurrentPage ? AppColors().dark : Colors.grey,
           borderRadius: BorderRadius.circular(12)),
     );
+  }
+  Future<AppUser> _getUser() async {
+ 
+
+    await getUser().then((value) {
+      user = value;
+      setState(() {
+       
+        if (user.isIntroductionViewed!= 0) {
+         push(context,HomePage());
+         
+        } else {
+         
+          return;
+        }
+      });
+    });
+  
+
+    return user;
   }
 }
 
@@ -168,5 +193,9 @@ class SliderTile extends StatelessWidget {
         ],
       ),
     );
+    
   }
+    
+  
+
 }

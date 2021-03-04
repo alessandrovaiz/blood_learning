@@ -1,36 +1,58 @@
 import 'package:blood_learning/helpers/db_helper.dart';
+import 'package:blood_learning/introduction/introduction_page.dart';
+
 import 'package:blood_learning/quiz/quiz_page.dart';
+import 'package:blood_learning/shared/models/chart_model.dart';
 import 'package:blood_learning/shared/models/module_model.dart';
+import 'package:blood_learning/shared/models/user_model.dart';
+import 'package:blood_learning/shared/store/user_store.dart';
+
+import 'package:charts_flutter/flutter.dart' as charts;
 
 import 'package:blood_learning/widgets/button.dart';
+import 'package:blood_learning/widgets/drawer.dart';
 import 'package:blood_learning/widgets/utils/colors.dart';
 import 'package:blood_learning/widgets/utils/navigator.dart';
+import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:random_color/random_color.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sweetalert/sweetalert.dart';
 
 class HomePage extends StatefulWidget {
+  
   @override
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+
+
+class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<HomePage> {
+
+  @override
+  bool get wantKeepAlive => true;
+  AppUser user;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  List<Module> _modules = new List<Module>();
+  List<Chart> charts = new List<Chart>();
+  
   List<Module> modules;
   Module _currentModule;
   bool _load = true;
+  bool _loadChart = true;
+
+
 
   @override
-  void initState() {
+  void initState()  {
     // TODO: implement initState
     super.initState();
-
-    getmodules();
+    
+    getdata();
   }
 
-  getmodules() async {
+  getdata() async {
+    user = await _getUser();
     modules = await _getModules();
   }
 
@@ -49,10 +71,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         backgroundColor: Colors.white,
-        drawer: Container(
-          color: Colors.grey,
-          width: MediaQuery.of(context).size.width * 0.7,
-        ),
+        drawer: CustomDrawer(),
         body: _buildBody(),
       ),
     );
@@ -94,7 +113,9 @@ class _HomePageState extends State<HomePage> {
           Container(
             padding: EdgeInsets.only(top: 25),
             width: MediaQuery.of(context).size.width * 0.7,
-            child: AppButton("Começar", () {}),
+            child: AppButton("Começar", () {
+              
+            }),
           )
         ],
       ),
@@ -103,7 +124,7 @@ class _HomePageState extends State<HomePage> {
 
   _buildFooter() {
     return Padding(
-      padding: const EdgeInsets.only(top: 32, bottom: 400),
+      padding: const EdgeInsets.only(top: 32,bottom: 32),
       child: Column(
         children: [
           Row(
@@ -117,6 +138,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
+           Container(child: !_loadChart ?Charts(data: charts) : Padding(padding:EdgeInsets.all(64) ,child: CircularProgressIndicator()),)
           //  charts(),
         ],
       ),
@@ -208,7 +230,7 @@ class _HomePageState extends State<HomePage> {
                               onPressed: () {
                                 DatabaseHelper().resetModule(id: module.id);
                                 setState(() {
-                                  getmodules();
+                                  getdata();
                                 });
                               })
                           : SizedBox()
@@ -229,7 +251,7 @@ class _HomePageState extends State<HomePage> {
                           if (refresh) {
                             if (!mounted) return;
                             setState(() {
-                              getmodules();
+                              getdata();
                             });
                           }
                         },
@@ -264,15 +286,17 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Estudos",
+         
+     
+       !_load ?Text(
+          "Olá ${user.name}!",
           style: TextStyle(
               color: AppColors().dark,
               fontFamily: 'Montserrat-SemiBold',
               fontWeight: FontWeight.w100,
               fontSize: 24),
           textAlign: TextAlign.start,
-        ),
+        ) : CircularProgressIndicator(),
         SizedBox(
           height: 10,
         ),
@@ -288,7 +312,64 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  charts() {}
+
+  
+
+  getCharts() async {
+    List<Chart> _charts = new List<Chart>();
+
+    for(Module m in modules) { 
+      Chart aux = await _getChart(id:m.id,moduleName: m.moduleName);
+      _charts.add(
+        aux
+        
+      );
+      print(await _getChart(id:m.id,moduleName: m.moduleName));
+     
+    }
+     setState(() {
+        if(_charts != null) { 
+        _loadChart = false;
+        charts = _charts; 
+      
+      }
+      });
+   
+  }
+
+
+  Future<Chart> _getChart({int id, String moduleName}) async {
+    var dbHelper = DatabaseHelper();
+    Chart aux;
+    await dbHelper.getChart(moduleId: id,moduleName: moduleName).then((value) { 
+     
+     aux =  value;
+    });
+    return aux;
+  }
+
+
+
+  Future<AppUser> _getUser() async {
+    
+
+    await getUser().then((value) {
+      user = value;
+      setState(() {
+       
+        if(user!=null ) {
+          _load=false;
+        }
+          else {
+         
+          push(context,IntroductionPage());
+        }
+      });
+    });
+  
+
+    return user;
+  }
 
   Future<List<Module>> _getModules() async {
     var dbHelper = DatabaseHelper();
@@ -296,12 +377,14 @@ class _HomePageState extends State<HomePage> {
     await dbHelper.getModules().then((value) {
       modules = value;
       setState(() {
+        
         _load = false;
         if (modules.length > 0) {
           _currentModule = modules[0];
         }
       });
     });
+    getCharts();
     print(modules.length);
 
     return modules;
@@ -311,5 +394,53 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+  }
+
+  
+
+
+}
+
+class Charts extends StatelessWidget {
+  final List<Chart> data;
+
+  Charts({@required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+
+    RandomColor _randomColor = RandomColor();
+
+    List<charts.Series<Chart, String>> series = [
+
+    charts.Series(
+      id: "Modulos",
+      data: data,
+      domainFn: (Chart series, _) => series.moduleName,
+      measureFn: (Chart series, _) => int.parse(series.correctAnswers),
+      colorFn: (Chart series, _) => charts.ColorUtil.fromDartColor( _randomColor.randomColor(colorHue: ColorHue.red)))
+  ];
+
+   return Container(
+      height: 400,
+      padding: EdgeInsets.all(20),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: <Widget>[
+              Text(
+                "Quantidade de acertos por módulo",
+                style: Theme.of(context).textTheme.body2,
+              ),
+              Expanded(
+                child: charts.BarChart(series, animate: true),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  
   }
 }
