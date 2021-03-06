@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:blood_learning/helpers/db_helper.dart';
+import 'package:blood_learning/home/tutorial.dart';
 import 'package:blood_learning/introduction/introduction_page.dart';
 
 import 'package:blood_learning/quiz/quiz_page.dart';
 import 'package:blood_learning/shared/models/chart_model.dart';
 import 'package:blood_learning/shared/models/module_model.dart';
 import 'package:blood_learning/shared/models/user_model.dart';
+import 'package:blood_learning/shared/store/charts_store.dart';
+import 'package:blood_learning/shared/store/modules_store.dart';
 import 'package:blood_learning/shared/store/user_store.dart';
 
 import 'package:charts_flutter/flutter.dart' as charts;
@@ -16,6 +21,7 @@ import 'package:blood_learning/widgets/utils/navigator.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:highlighter_coachmark/highlighter_coachmark.dart';
 import 'package:random_color/random_color.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sweetalert/sweetalert.dart';
@@ -29,6 +35,14 @@ class HomePage extends StatefulWidget {
 
 
 class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<HomePage> {
+
+
+  GlobalKey _step1 =  GlobalObjectKey("step1");
+  GlobalKey _step2 =GlobalObjectKey("step2");
+  GlobalKey _step3 = GlobalObjectKey("step3");
+  
+
+ 
 
   @override
   bool get wantKeepAlive => true;
@@ -49,11 +63,16 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
     super.initState();
     
     getdata();
+   
   }
 
   getdata() async {
     user = await _getUser();
     modules = await _getModules();
+    
+    
+     
+     
   }
 
   @override
@@ -61,15 +80,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
     return Container(
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: AppBar(
-          iconTheme: IconThemeData(color: AppColors().dark),
-          elevation: 0.0,
-          backgroundColor: Colors.transparent,
-          leading: IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () => _scaffoldKey.currentState.openDrawer(),
-          ),
-        ),
+      
         backgroundColor: Colors.white,
         drawer: CustomDrawer(),
         body: _buildBody(),
@@ -77,20 +88,39 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
     );
   }
 
-  SingleChildScrollView _buildBody() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 32.0, right: 32, top: 32),
-        child: Column(
-          children: [
-            _buildBodyHeader(),
-            SizedBox(height: 40),
-            _buildModuleSelection(),
-            _buildStartImageMap(),
-            _buildFooter(),
-          ],
+   _buildBody() {
+    return CustomScrollView(
+      
+      slivers: [
+        
+        SliverAppBar(
+          iconTheme: IconThemeData(color: AppColors().dark),
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          
+         
+          leading: IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () => _scaffoldKey.currentState.openDrawer(),
+          ),
+         
         ),
-      ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 32.0, right: 32, top: 32),
+            child: Column(
+              children: [
+                _buildBodyHeader(),
+                SizedBox(height: 40),
+                _buildModuleSelection(),
+                _buildStartImageMap(),
+                _buildShowTutorial(),
+                _buildFooter(),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -110,20 +140,41 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
               ),
             ],
           ),
-          Container(
-            padding: EdgeInsets.only(top: 25),
-            width: MediaQuery.of(context).size.width * 0.7,
-            child: AppButton("Começar", () {
-              
-            }),
-          )
+       Container(
+         padding: EdgeInsets.only(top:32),
+         height: MediaQuery.of(context).size.height*0.12,
+         width: MediaQuery.of(context).size.width*0.7,
+         child: OutlineButton(
+         key: _step2,
+          onPressed: () { showTutorial();},
+          child: Text("Começar"),
+          shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25.0),
+                ),
+      ),
+       ),
+         
+           
         ],
       ),
     );
   }
 
+  showTutorial() {
+   
+    showTutorialSteps(
+    _step1,"Selecione o módulo que deseja estudar  e após isso clique no botão começar para responder as perguntas", 
+    _step2,"Clique no botão começar para responder as perguntas de mapeamento", 
+    _step3,"Você também pode acompanhar seu desempenho nos gráficos no fim da página!" );
+   
+    
+    
+
+  }
+
   _buildFooter() {
     return Padding(
+      
       padding: const EdgeInsets.only(top: 32,bottom: 32),
       child: Column(
         children: [
@@ -138,8 +189,22 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
               ),
             ],
           ),
-           Container(child: !_loadChart ?Charts(data: charts) : Padding(padding:EdgeInsets.all(64) ,child: CircularProgressIndicator()),)
+           Container(
+             key: _step3,
+             child: !_loadChart ?Charts(data: charts) : Padding(padding:EdgeInsets.all(64) ,child: CircularProgressIndicator()),)
           //  charts(),
+        ],
+      ),
+    );
+  }
+
+  _buildShowTutorial() { 
+    return Padding(
+      padding: const EdgeInsets.only(top:24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          GestureDetector(child: Text("Mostrar tutorial",style: TextStyle(color: Colors.blue,fontFamily: 'Montserrat-Regular'),),onTap: ()=> showTutorial(),),
         ],
       ),
     );
@@ -147,16 +212,20 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
 
   Row _buildModuleSelection() {
     return Row(
+     
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         !_load
             ? Column(
+              key: _step1,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: modules.map((Module module) {
                   return Padding(
+                      
                     padding: const EdgeInsets.only(left: 24.0, bottom: 16),
                     child: InkWell(
+                      
                       onTap: () {
                         setState(() {
                           for (Module m in modules) {
@@ -202,10 +271,18 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
         child: Stack(
           children: [
             module.iconImagePath != null
-                ? Image.asset(
-                    module.iconImagePath,
-                    fit: BoxFit.cover,
-                  )
+                ? Container(
+                  decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: AppColors().lowLight),
+                  width: 200,
+                height: 250,
+                  child: Image.asset(
+                    
+                      module.iconImagePath,
+                      fit: BoxFit.fill,
+                    ),
+                )
                 : SizedBox(),
             Row(
               children: [
@@ -228,7 +305,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
                                 size: 24,
                               ),
                               onPressed: () {
-                                DatabaseHelper().resetModule(id: module.id);
+                                resetModule(id: module.id);
                                 setState(() {
                                   getdata();
                                 });
@@ -245,9 +322,10 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
                       height: MediaQuery.of(context).size.height * 0.1,
                       width: MediaQuery.of(context).size.width * 0.3,
                       child: AppButton(
+                        
                         "Começar",
                         () async {
-                          bool refresh = await push(context, Quiz(module.id));
+                          bool refresh = await push(context, Quiz(module.id)) ?? false ;
                           if (refresh) {
                             if (!mounted) return;
                             setState(() {
@@ -259,6 +337,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
                         color: AppColors().dark,
                         color2: AppColors().dark,
                         textColor: AppColors().light,
+                        
                       ),
                     ),
                     alignment: Alignment.bottomRight,
@@ -339,9 +418,9 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
 
 
   Future<Chart> _getChart({int id, String moduleName}) async {
-    var dbHelper = DatabaseHelper();
+   
     Chart aux;
-    await dbHelper.getChart(moduleId: id,moduleName: moduleName).then((value) { 
+    await getChart(moduleId: id,moduleName: moduleName).then((value) { 
      
      aux =  value;
     });
@@ -359,6 +438,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
        
         if(user!=null ) {
           _load=false;
+         
         }
           else {
          
@@ -367,14 +447,14 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
       });
     });
   
-
+    
     return user;
   }
 
   Future<List<Module>> _getModules() async {
-    var dbHelper = DatabaseHelper();
+    
 
-    await dbHelper.getModules().then((value) {
+    await getModules().then((value) {
       modules = value;
       setState(() {
         
@@ -390,13 +470,23 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
     return modules;
   }
 
+  
+  
+
+showButton() {
+}
+  
+  
+  
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
   }
 
+
   
+
 
 
 }
@@ -423,10 +513,10 @@ class Charts extends StatelessWidget {
 
    return Container(
       height: 400,
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(5),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(1.0),
           child: Column(
             children: <Widget>[
               Text(
@@ -434,6 +524,7 @@ class Charts extends StatelessWidget {
                 style: Theme.of(context).textTheme.body2,
               ),
               Expanded(
+
                 child: charts.BarChart(series, animate: true),
               )
             ],

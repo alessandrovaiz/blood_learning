@@ -10,9 +10,12 @@ class AppButton extends StatelessWidget {
   final Color color;
   final Color color2;
   final Color textColor;
+   Key key ;
 
   AppButton(this.str, this.callback,
-      {this.showProgress = false,
+      {
+      this.key,
+      this.showProgress = false,
       this.color = Colors.white,
       this.color2 = Colors.white,
       this.outlineBtn = true,
@@ -38,6 +41,7 @@ class AppButton extends StatelessWidget {
             ),
       child: outlineBtn
           ? OutlineButton(
+            key: key,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25.0),
               ),
@@ -58,6 +62,7 @@ class AppButton extends StatelessWidget {
               onPressed: callback,
             )
           : FlatButton(
+            key: key,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25.0),
               ),

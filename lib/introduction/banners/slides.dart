@@ -167,7 +167,7 @@ class SliderTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-              width: 300, height: 100, child: Image.asset(imageAssetPath)),
+              width: 500, height: 166, child: Image.asset(imageAssetPath)),
           SizedBox(
             height: 20,
           ),
