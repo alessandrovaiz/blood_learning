@@ -1,6 +1,6 @@
-import 'dart:convert' as convert;
 
-import 'package:blood_learning/shared/utils/prefs.dart';
+
+
 
 class AppUser {
   int id;

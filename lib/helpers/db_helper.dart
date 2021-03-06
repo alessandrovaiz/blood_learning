@@ -81,7 +81,7 @@ class DatabaseHelper {
     await dbClient.rawQuery('UPDATE MODULE SET IS_COMPLETED = 0 WHERE 1=1  ');
     await dbClient.rawQuery('UPDATE QUESTION  SET QST_ISANSWERED = 0, QST_ISOK = 9 WHERE 1=1');
     await dbClient.rawQuery('DELETE FROM USER WHERE 1=1');
-    close();
+   
   }
 
  

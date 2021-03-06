@@ -21,10 +21,10 @@ import 'package:blood_learning/widgets/utils/navigator.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:highlighter_coachmark/highlighter_coachmark.dart';
+
 import 'package:random_color/random_color.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:sweetalert/sweetalert.dart';
+
 
 class HomePage extends StatefulWidget {
   
@@ -146,7 +146,14 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
          width: MediaQuery.of(context).size.width*0.7,
          child: OutlineButton(
          key: _step2,
-          onPressed: () { showTutorial();},
+          onPressed: () {
+            SweetAlert.show(
+                            context,
+                            subtitle: "Em desenvolvimento",
+                            style: SweetAlertStyle.confirm,
+                            confirmButtonColor: AppColors().dark,
+                            confirmButtonText: "Ok"
+            );},
           child: Text("Começar"),
           shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25.0),
@@ -291,12 +298,15 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin<
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        module.moduleName ?? "",
-                        style: TextStyle(
-                            color: AppColors().dark,
-                            fontFamily: 'Montserrat-SemiBold',
-                            fontSize: 14),
+                      Padding(
+                        padding: const EdgeInsets.only(left:8.0,top:8),
+                        child: Text(
+                          module.moduleName ?? "",
+                          style: TextStyle(
+                              color: AppColors().dark,
+                              fontFamily: 'Montserrat-SemiBold',
+                              fontSize: 14),
+                        ),
                       ),
                       module.isCompleted != 0
                           ? IconButton(
